@@ -3,6 +3,8 @@ require 'resolv'
 require 'metaid'
 HoneyResponse = Struct.new(:status, :days, :threat, :type)
 
+access_key = ARGV[0]
+
 infos = Hash.new
 bad_guys = Hash.new
 File.open('access.log') do |f|
@@ -13,7 +15,7 @@ File.open('access.log') do |f|
 	  info = infos[ip]
 	else
 	  octets = ip.split('.').reverse.join('.')
-	  dns_name = "alucmfidxaxb.#{octets}.dnsbl.httpbl.org"
+	  dns_name = "#{access_key}.#{octets}.dnsbl.httpbl.org"
 	  response = Resolv.getaddress dns_name
 	  raw_info = response.split('.').map(&:to_i)
 	  info = HoneyResponse.new(*raw_info)
@@ -54,4 +56,5 @@ bad_guys.keys.each do |ip|
   puts "banning #{ip}"
   print ` iptables -D INPUT -s 194.165.42.59 -j REJECT 2> /dev/null`
   print ` iptables -A INPUT -s 194.165.42.59 -j REJECT `
+  print `iptables -L`
 end
