@@ -4,6 +4,7 @@ require 'metaid'
 HoneyResponse = Struct.new(:status, :days, :threat, :type)
 
 infos = Hash.new
+bad_guys = Hash.new
 File.open('access.log') do |f|
   f.each do |line|
   	ip = line.split(/\s/)[0]
@@ -44,6 +45,13 @@ File.open('access.log') do |f|
 	  next
 	end
 	report "Bad guy"
+	bad_guys[ip] = true
 
   end
+end
+
+bad_guys.keys.each do |ip|
+  puts "banning #{ip}"
+  print ` iptables -D INPUT -s 194.165.42.59 -j REJECT 2> /dev/null`
+  print ` iptables -A INPUT -s 194.165.42.59 -j REJECT `
 end
